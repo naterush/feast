@@ -1,0 +1,39 @@
+.container {
+}
+
+.main {
+  min-height: 100vh;
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+
+  background-color: #F6EDE8;
+}
+
+.inputContainer {
+  background-color: white;
+  height: 90px;
+  border-radius: 15px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 15px 10px;
+  border: 1px solid white;
+}
+
+.inputContainer:focus-within {
+  border: 1px solid lightblue;
+}
+
+.input {
+  flex-grow: 1;
+  border: 0;
+  outline: none;
+}
+
+.input:focus {
+  border: 0;
+  outline: none;
+}
