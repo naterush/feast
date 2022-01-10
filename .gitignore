@@ -1,0 +1,8 @@
+password-amazon.txt
+password-instacart.txt
+UserData/
+.pytest_cache
+venv/
+*.pyc
+feast/__pycache__/
+.DS_Store
