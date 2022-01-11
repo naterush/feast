@@ -9,7 +9,7 @@ serverPort = 8080
 cart = InstaCart('naterush1997@gmail.com', '../password-instacart.txt')
 #cart.login()
 
-DIRECTORY = '../frontend/out'
+DIRECTORY = '../ui/out'
 
 
 class MyServer(SimpleHTTPRequestHandler):
@@ -43,6 +43,15 @@ class MyServer(SimpleHTTPRequestHandler):
             # Add the recipe
             cart.login()
             cart.add_recipe(url)
+
+            # Send the response
+            self.send_response(200)
+            self.send_header('Content-type', 'application/json')
+            self.end_headers()
+        if self.path.startswith('/toggle_ingredient'):
+            content = json.loads(self.rfile.read(int(self.headers['Content-Length'])).decode('utf8'))
+            index = content['index']
+            cart.toggle_ingredient(index)
 
             # Send the response
             self.send_response(200)

@@ -11,11 +11,14 @@ export interface Recipe {
   url: string;
   servings: number;
   ingredients: IngredientPair[];
+  loading_recipe: boolean;
+  outstanding_operations: boolean;
 }
 export interface IngredientPair {
   recipe_ingredient: Ingredient;
   cart_ingredient: Ingredient;
   other_ingredient_links?: IngredientLink[];
+  toggle: boolean;
 }
 export interface Ingredient {
   count: number;
@@ -33,8 +36,7 @@ export interface IngredientLink {
 const Home: NextPage = () => {
   
   const [recipe, setRecipe] = useState<Recipe | undefined>(undefined);
-
-  console.log(recipe);
+  const [toggles, setToggles] = useState<boolean[]>([]);
 
   const loadData = async () => {
     const response = await fetch('/getcurrentrecipe', {
@@ -44,13 +46,36 @@ const Home: NextPage = () => {
           'Content-Type': 'application/json'
         },
     });
+    if (response.status != 200) {
+      return;
+    }
 
-    setRecipe(JSON.parse(await response.text()))
+    const text = await response.text();
+    setRecipe(JSON.parse(text))
   }
 
   useEffect(() => {
     loadData()
+    // We load the data every 200ms, so we can watch the recipe grow
+    const interval = setInterval(() => {
+      loadData()
+    }, 200);
+
+    return () => clearInterval(interval);
   }, [])
+
+  // Make sure the toggles are the right length
+  useEffect(() => {
+    setToggles((prevToggles) => {
+      const newToggles = [...prevToggles];
+      if (newToggles.length < (recipe?.ingredients.length || 0)) {
+        for (let i = 0; i < ((recipe?.ingredients.length || 0) - newToggles.length); i++) {
+          newToggles.push(true)
+        }
+      }
+      return newToggles;
+    })
+  }, [recipe])
 
   return (
     <>
@@ -88,9 +113,14 @@ const Home: NextPage = () => {
           <div className='w-100 flex flex-column justify-content-space-between'>
             {recipe?.ingredients.map((ingredientPair, i) => {
               return (
-                <Ingredient key={i} ingredient={ingredientPair.cart_ingredient} recipeIngredient={ingredientPair.recipe_ingredient}/>
+                <Ingredient key={i} ingredientPair={ingredientPair} toggles={toggles} setToggles={setToggles} index={i}/>
               )
             })}
+            {recipe?.loading_recipe && 
+              <div>
+                Loading more ingredients...
+              </div>
+            }
           </div>
           <div className='w-100 flex flex-row justify-content-space-between mt-30px'>
             <button className='blue-button'>
@@ -100,7 +130,10 @@ const Home: NextPage = () => {
                 </Link>
               </h3>
             </button>
-            <IconButton text='Checkout' color='blue' onClick={() => {
+            <IconButton text={!recipe?.outstanding_operations ? 'Checkout' : 'Loading...'} color='blue' onClick={() => {
+              if (recipe?.outstanding_operations ) {
+                return;
+              }
               window.open('https://www.instacart.com/store/checkout_v3')
             }}/>
           </div>

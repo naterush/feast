@@ -196,8 +196,26 @@ SIZE_TESTS = [
     ('2 count bag', 0.3333333333333333, 'cup', 'celery', 1),
     ('4 each', 1.0, 'ounce', 'dry ranch salad dressing mix', 1),
     ('4 each', 1.0, 'teaspoon', 'dry ranch salad dressing mix', 1),
+    ('per lb', 8.0, 'chicken', 'thighs', 3),
+    ('48 oz', 6.0, 'small', 'red potatoes', 1),
+    ('5 lb bag', 6.0, 'small', 'red potatoes', 1),
+    ('1 ct', 6.0, 'small', 'red potatoes', 6),
+    ('1 ct', 1, 'pinch', 'pepper', 1),
+    ('1 lb', 8.0, 'chicken', 'thighs', 3),
+    ('1 bunch', 1.5, 'teaspoons', 'fresh oregano', 1),
 ]
 
 @pytest.mark.parametrize("size_text, count, unit, ingredient, final_count", SIZE_TESTS)
 def test_size_computations(size_text, count, unit, ingredient, final_count):
     assert gotten_size_text_to_count(size_text, count, unit, ingredient) == final_count
+
+
+def main():
+    import json
+    with open('tests.json', 'r+') as f:
+        data = json.loads(f.read())
+
+    for d in data:
+        print(str((d['gotten_size_text'], d['count'], d['unit'], d['ingredient'])) + ",")
+
+main()

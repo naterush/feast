@@ -1,5 +1,5 @@
 import React from "react";
-import { Ingredient } from "../pages/recipe";
+import { Ingredient, IngredientPair } from "../pages/recipe";
 import styles from '../styles/Ingredient.module.css'
 
 const Edit = () => (
@@ -8,21 +8,26 @@ const Edit = () => (
     </svg>
 )
 
-const Check = () => (
-    <svg width="11" height="7" viewBox="0 0 11 7" fill="none" xmlns="http://www.w3.org/2000/svg">
+const Check = (props: {visible?: boolean}) => (
+    <svg style={{visibility: !props.visible ? 'hidden' : undefined}} width="11" height="7" viewBox="0 0 11 7" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M9.13601 1L4.13601 6L1.86328 3.72727" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
 )
 
-const Ingredient = (props: {ingredient: Ingredient, recipeIngredient: Ingredient}): JSX.Element => {
+const Ingredient = (props: {
+    ingredientPair: IngredientPair, 
+    index: number,
+    toggles: boolean[], 
+    setToggles: React.Dispatch<React.SetStateAction<boolean[]>>
+}): JSX.Element => {
     return (
         <div className={styles.container + ' w-100 text-left flex flex-row justify-content-space-between align-items-center mt-10px'}>
             <div>
                 <p>
-                    {props.ingredient.count}x {props.ingredient.ingredient} ({props.ingredient.unit})
+                    {props.ingredientPair.cart_ingredient.count}x {props.ingredientPair.cart_ingredient.ingredient} ({props.ingredientPair.cart_ingredient.unit})
                 </p>
                 <p>
-                    {props.recipeIngredient.count}x {props.recipeIngredient.ingredient} ({props.recipeIngredient.unit})
+                    {props.ingredientPair.recipe_ingredient.count}x {props.ingredientPair.recipe_ingredient.ingredient} ({props.ingredientPair.recipe_ingredient.unit})
                 </p>
             </div>
             <div className='flex flex-row align-items-center mr-20px'>
@@ -32,8 +37,27 @@ const Ingredient = (props: {ingredient: Ingredient, recipeIngredient: Ingredient
                         Edit
                     </div>
                 </button>
-                <div className={styles.checkbox + ' flex flex-row justify-content-center align-items-center'}>
-                    <Check/>
+                <div 
+                    className={styles.checkbox + ' flex flex-row justify-content-center align-items-center'} 
+                    style={{backgroundColor: props.toggles[props.index] ? '#576FC8' : undefined}}
+                    onClick={async (e) => {
+                        props.setToggles((prevToggles) => {
+                            const newToggles = [...prevToggles];
+                            newToggles[props.index] = !newToggles[props.index];
+                            return newToggles;
+                        })
+
+                        const response = await fetch('/toggle_ingredient', {
+                            method: 'POST',
+                            headers: {
+                              'Accept': 'application/json',
+                              'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({index: props.index})
+                        });
+                    }}
+                >
+                    <Check visible={props.toggles[props.index]}/>
                 </div>
             </div>
             

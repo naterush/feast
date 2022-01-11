@@ -36,12 +36,13 @@ class IngredientLink:
 @dataclass()
 class IngredientPair:
     """
-    Storing the mapping from one ingredient to other ingredients
+    Storing the mapping from one ingredient to other ingredients, and includes if
+    is is currently included in the recipe
     """
     recipe_ingredient: Ingredient
     cart_ingredient: Ingredient
     other_ingredient_links: List[IngredientLink]
-    # TODO: add the other links (should we parse them then? idk)
+    toggle: bool # False if the ingredient is not in the cart
 
     def __repr__(self) -> str:
         return f'To order {self.recipe_ingredient.count}, {self.recipe_ingredient.unit}, {self.recipe_ingredient.ingredient}, ordered {self.cart_ingredient.count}, {self.cart_ingredient.unit}, {self.cart_ingredient.ingredient} with {len(self.other_ingredient_links)} other options.'

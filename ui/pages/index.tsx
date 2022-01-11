@@ -37,7 +37,6 @@ const Home: NextPage = () => {
   const submitURL = async () => {
     setLoading(true);
 
-    console.log("123")
     const response = await fetch('/setcurrentrecipe', {
         method: 'POST',
         headers: {

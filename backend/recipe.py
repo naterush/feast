@@ -46,6 +46,7 @@ INSTRUCTIONS = [
     'juiced',
     'shredded',
     'zested',
+    'quartered',
     'thinly sliced',
     'or more as needed',
     'or as desired',
@@ -63,6 +64,7 @@ INSTRUCTIONS = [
     'cut into large florets',
     'green part only, thinly sliced',
     'cored and cut into 1-inch pieces',
+    'plus more for kneading',
     ', pressed, or more to taste',
     ' - stemmed, seeded, and finely chopped',
     ', cut into florets',
@@ -257,6 +259,9 @@ def _gotten_size_text_to_count(gotten_size_text, count, unit, ingredient=None) -
             return ceil(count)
         elif unit == 'pound' or unit == 'pounds':
             return ceil(count)
+        elif unit == 'chicken' and ingredient == 'thighs':
+            # 2 2/3 chicken thighs in a pound
+            return ceil(count / (2 + 2/3))
         else:
             raise Exception("No handler for unit", gotten_size_text, count, unit, ingredient)
     
@@ -310,6 +315,23 @@ def _gotten_size_text_to_count(gotten_size_text, count, unit, ingredient=None) -
         # Assume we only need one packet of this
         return 1
 
+    if ingredient == 'red potatoes' and unit == 'small':
+        if gotten_unit == 'lb bag' or gotten_unit == 'lb':
+            # 1 pound is 7 small red potatoes
+            return ceil(count / 7 / gotten_count)
+        if gotten_unit == 'oz':
+            return ceil(count * 6 / gotten_count)
+
+    if unit == 'chicken' and ingredient == 'thighs':
+        if gotten_unit == 'lb' or gotten_unit == 'lbs':
+            # 2 2/3 chicken thighs in a pound
+            return ceil(count / (2 + 2/3) / gotten_count)
+
+    if ingredient == 'fresh oregano':
+        if gotten_unit == 'bunch':
+            # We don't need more than a single bunch of herbs, methinks
+            return 1
+
 
     if gotten_unit == 'oz' or gotten_unit == 'fl oz' or gotten_unit == 'oz container':
         if unit == 'clove' or unit == 'cloves':
@@ -360,12 +382,14 @@ def _gotten_size_text_to_count(gotten_size_text, count, unit, ingredient=None) -
     elif gotten_unit == 'ct':
         if unit == 'large':
             return ceil(count / gotten_count)
+        elif unit == 'small':
+            return ceil(count / gotten_count)
         elif unit == 'head' or unit == 'heads':
             return ceil(count / gotten_count)
         elif unit is None:
             return ceil(count / gotten_count)
-        elif unit == 'large':
-            return ceil(count / gotten_count)
+        elif unit == 'pinch':
+            return 1
         
     elif gotten_unit == 'lb' or gotten_unit == 'lb bunch' or gotten_unit == 'lb bag':
         if unit == 'cup' or unit == 'cups':
