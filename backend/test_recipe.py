@@ -203,6 +203,12 @@ SIZE_TESTS = [
     ('1 ct', 1, 'pinch', 'pepper', 1),
     ('1 lb', 8.0, 'chicken', 'thighs', 3),
     ('1 bunch', 1.5, 'teaspoons', 'fresh oregano', 1),
+    ('$3.99', 1.0, 'cup', 'cauliflower', 1),
+    ('1 ct', 1.0, 'cup', 'cauliflower', 1),
+    ('$0.94\neach (est.)\n$0.80 with Express\n$0.99 / lb\nFinal cost by weight', 3.5, 'cups', 'potatoes', 5),
+    ('per lb', 0.75, 'cup', 'ham', 1),
+    ('1 ct', 3.0, 'cloves', 'garlic', 1),
+    ('$0.50', 3.0, 'cloves', 'garlic', 1),
 ]
 
 @pytest.mark.parametrize("size_text, count, unit, ingredient, final_count", SIZE_TESTS)

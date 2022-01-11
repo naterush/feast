@@ -247,27 +247,21 @@ def gotten_size_text_to_count(gotten_size_text, count, unit, ingredient=None) ->
 
         raise e
 
-def _gotten_size_text_to_count(gotten_size_text, count, unit, ingredient=None) -> int:
+def _gotten_size_text_to_count(gotten_size_text: str, count, unit, ingredient=None) -> int:
     """
     Returns the total amoutn we need to get count of measurment. Currently
     only handles size measurments from allrecipies.
     """
     ingredient = ingredient.lower() if ingredient else None
-    gotten_count, gotten_unit = gotten_size_text.split(' ', 1)
-
+    
     # First, we check if this is a per lb approach, in which case we handle this specially
     if gotten_size_text == 'per lb':
-        if unit == None:
-            return ceil(count)
-        elif unit == 'pound' or unit == 'pounds':
-            return ceil(count)
-        elif unit == 'chicken' and ingredient == 'thighs':
-            # 2 2/3 chicken thighs in a pound
-            return ceil(count / (2 + 2/3))
-        else:
-            raise Exception("No handler for unit", gotten_size_text, count, unit, ingredient)
-    
+        gotten_size_text = '1 lb'
+    if gotten_size_text.startswith('$'):
+        # If it's just a raw price, then we assume they are being solf one by 1
+        gotten_size_text = '1 ct'
 
+    gotten_count, gotten_unit = gotten_size_text.split(' ', 1)
     gotten_count = float(gotten_count)
 
     # Then, we check specific ingredients that have tricky measurments
@@ -323,6 +317,11 @@ def _gotten_size_text_to_count(gotten_size_text, count, unit, ingredient=None) -
             return ceil(count / 7 / gotten_count)
         if gotten_unit == 'oz':
             return ceil(count * 6 / gotten_count)
+    if ingredient == 'potatoes':
+        if gotten_unit == 'ct':
+            if unit == 'cup' or unit == 'cups':
+                # 1.25 potatoes in a cup
+                return ceil(count * 1.25 / gotten_count)
 
     if unit == 'chicken' and ingredient == 'thighs':
         if gotten_unit == 'lb' or gotten_unit == 'lbs':
@@ -333,6 +332,12 @@ def _gotten_size_text_to_count(gotten_size_text, count, unit, ingredient=None) -
         if gotten_unit == 'bunch':
             # We don't need more than a single bunch of herbs, methinks
             return 1
+
+    if ingredient == 'cauliflower':
+        if gotten_unit == 'ct':
+            if unit == 'cup' or unit == 'cups':
+                # A single head if 4-6 cups of florets
+                return ceil(count / 6 * gotten_count)
 
 
     if gotten_unit == 'oz' or gotten_unit == 'fl oz' or gotten_unit == 'oz container':
@@ -392,6 +397,9 @@ def _gotten_size_text_to_count(gotten_size_text, count, unit, ingredient=None) -
             return ceil(count / gotten_count)
         elif unit == 'pinch':
             return 1
+        elif ingredient == 'garlic':
+            # We assume it's a head of garlic we found
+            return ceil(count / 10 / gotten_count)
         
     elif gotten_unit == 'lb' or gotten_unit == 'lb bunch' or gotten_unit == 'lb bag':
         if unit == 'cup' or unit == 'cups':
@@ -405,16 +413,3 @@ def _gotten_size_text_to_count(gotten_size_text, count, unit, ingredient=None) -
             return ceil(count / 16 / gotten_count)
     
     raise Exception("No handler for unit", gotten_size_text, count, unit, ingredient)
-
-
-def is_same_ingredient(ingredient_one: str, ingredient_two: str) -> bool:
-    """
-    Returns true if the two ingredients are the same.
-
-    For now, we hard code most common ingredients; in the future,
-    we'd like to some language embedding to generalize this.
-    """
-    
-    
-
-    return True
