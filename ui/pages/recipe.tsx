@@ -11,7 +11,7 @@ export interface Recipe {
   url: string;
   servings: number;
   ingredients: IngredientPair[];
-  loading_recipe: boolean;
+  total_num_ingredients: number;
   outstanding_operations: boolean;
 }
 export interface IngredientPair {
@@ -31,6 +31,23 @@ export interface IngredientLink {
   link: string;
   is_sponsored: boolean;
   is_store_choice: boolean;
+}
+
+const toMinAndSeconds = (numMins: number): string => {
+  const seconds = numMins - Math.round(numMins);
+  const minutes = numMins - seconds;
+  let finalString = ''
+
+  if (minutes > 0) {
+    finalString += minutes + ' minutes'
+  }
+  if (seconds > 0) {
+    if (finalString.length > 0) {
+      finalString += ' and '
+    }
+    finalString += (60 * seconds) + ' seconds'
+  }
+  return finalString;
 }
 
 const Home: NextPage = () => {
@@ -77,6 +94,8 @@ const Home: NextPage = () => {
     })
   }, [recipe])
 
+  const numIngredientsNotYetInCart = (recipe?.total_num_ingredients || 0) - (recipe?.ingredients.length || 0);
+  console.log(recipe)
   return (
     <>
       <Head>
@@ -116,9 +135,9 @@ const Home: NextPage = () => {
                 <Ingredient key={i} ingredientPair={ingredientPair} toggles={toggles} setToggles={setToggles} index={i}/>
               )
             })}
-            {recipe?.loading_recipe && 
+            {numIngredientsNotYetInCart > 0 && 
               <div>
-                Loading more ingredients...
+                Loading {numIngredientsNotYetInCart} more ingredients. Probably about {toMinAndSeconds(numIngredientsNotYetInCart * .15)} minutes left.
               </div>
             }
           </div>

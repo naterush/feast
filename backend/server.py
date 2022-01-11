@@ -7,7 +7,7 @@ from Cart import InstaCart
 hostName = "localhost"
 serverPort = 8080
 cart = InstaCart('naterush1997@gmail.com', '../password-instacart.txt')
-#cart.login()
+cart.login()
 
 DIRECTORY = '../ui/out'
 
@@ -41,7 +41,6 @@ class MyServer(SimpleHTTPRequestHandler):
             print("Adding url")
             
             # Add the recipe
-            cart.login()
             cart.add_recipe(url)
 
             # Send the response

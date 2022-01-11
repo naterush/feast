@@ -47,6 +47,7 @@ INSTRUCTIONS = [
     'shredded',
     'zested',
     'quartered',
+    'finely chopped',
     'thinly sliced',
     'or more as needed',
     'or as desired',
@@ -68,6 +69,7 @@ INSTRUCTIONS = [
     ', pressed, or more to taste',
     ' - stemmed, seeded, and finely chopped',
     ', cut into florets',
+    'peeled and diced',
 ]
 INSTRUCTIONS.sort(key=lambda x: len(x), reverse=True)
 
