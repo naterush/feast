@@ -1,7 +1,8 @@
-from feast.ingredients import Ingredient
 import pytest
 
-from feast.recipe import get_parsed_ingredient_from_ingredient_text, gotten_size_text_to_count
+from recipe import (get_parsed_ingredient_from_ingredient_text,
+                            gotten_size_text_to_count)
+from ingredients import Ingredient
 
 PARSE_TESTS = [
     ('1 ½ cups butter, softened', (1.5, 'cups', 'butter')),
@@ -190,6 +191,11 @@ SIZE_TESTS = [
     ('0.5 gal', 2.0, 'cups', 'milk', 1),
     ('8 oz', 1.0, 'pound', 'mushrooms', 2),
     ('8 oz container', 1.0, 'pound', 'mushrooms', 2),
+    ('3 ct', 0.75, 'cup', 'ham', 1),
+    ('1 ct', 0.3333333333333333, 'cup', 'celery', 1),
+    ('2 count bag', 0.3333333333333333, 'cup', 'celery', 1),
+    ('4 each', 1.0, 'ounce', 'dry ranch salad dressing mix', 1),
+    ('4 each', 1.0, 'teaspoon', 'dry ranch salad dressing mix', 1),
 ]
 
 @pytest.mark.parametrize("size_text, count, unit, ingredient, final_count", SIZE_TESTS)

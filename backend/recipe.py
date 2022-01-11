@@ -54,6 +54,7 @@ INSTRUCTIONS = [
     'peeled and segmented',
     'rinsed and drained',
     'or to taste',
+    'or as needed to cover',
     'to taste',
     'or more',
     'peeled and cut in half lengthwise',
@@ -292,6 +293,22 @@ def _gotten_size_text_to_count(gotten_size_text, count, unit, ingredient=None) -
         if gotten_unit == 'ct':
             if unit == 'pound' or unit == 'pounds':
                 return ceil(count * 3 / gotten_count)
+    
+    if ingredient == 'ham':
+        if gotten_unit == 'ct':
+            if unit == 'cup' or unit == 'cups':
+                # TODO: this is wrong, but ok...
+                return 1
+
+    if ingredient == 'celery':
+        if gotten_unit == 'ct' or gotten_unit == 'count bag':
+            if unit == 'cup':
+                # 2 celery stalks in a cup
+                return ceil(count * 2 / gotten_count)
+    
+    if ingredient == 'dry ranch salad dressing mix':
+        # Assume we only need one packet of this
+        return 1
 
 
     if gotten_unit == 'oz' or gotten_unit == 'fl oz' or gotten_unit == 'oz container':

@@ -18,13 +18,6 @@ def main():
     cart.login()
 
     recipies = [
-        'https://www.allrecipes.com/recipe/262647/roasted-melting-potatoes/',
-        'https://www.allrecipes.com/recipe/11679/homemade-mac-and-cheese/',
-        'https://www.allrecipes.com/recipe/234799/poor-mans-stroganoff/',
-        'https://www.allrecipes.com/recipe/268091/easy-korean-ground-beef-bowl/',
-        'https://www.allrecipes.com/recipe/232247/tennessee-meatloaf/',
-        'https://www.allrecipes.com/recipe/6964/persimmon-bread-ii/',
-        'https://www.allrecipes.com/recipe/268029/chef-johns-apple-butter/',
         'https://www.allrecipes.com/recipe/232268/easy-and-delicious-ham-and-potato-soup/',
         'https://www.allrecipes.com/recipe/64961/sauteed-mushrooms/',
         'https://www.allrecipes.com/recipe/240060/loaded-cauliflower/',
