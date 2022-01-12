@@ -56,6 +56,12 @@ class MyServer(SimpleHTTPRequestHandler):
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
             self.end_headers()
+        if self.path.startswith('/clear'):
+            cart.clear()
+            # Send the response
+            self.send_response(200)
+            self.send_header('Content-type', 'application/json')
+            self.end_headers()
             
 
 if __name__ == "__main__":        

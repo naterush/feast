@@ -10,7 +10,8 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys
 
-from ingredients import Ingredient, IngredientLink, IngredientPair
+from ingredients import (DEFAULT_NO_ADD_INGREDIENTS, Ingredient,
+                         IngredientLink, IngredientPair)
 from recipe import get_recipe_from_all_recipe_link, gotten_size_text_to_count
 
 
@@ -76,14 +77,18 @@ class InstaCart():
             operation = self.operation_queue.get()
             self.processing_operation = True
             print("Got op", operation)
-            if operation['op'] == 'login':
-                self._login()
-            elif operation['op'] == 'add_recipe':
-                self._add_recipe(operation['params']['url'])
-            elif operation['op'] == 'toggle_ingredient':
-                self._toggle_ingredient(operation['params']['index'])
-            elif operation['op'] == 'clear':
-                self._clear()
+            try:
+                if operation['op'] == 'login':
+                    self._login()
+                elif operation['op'] == 'add_recipe':
+                    self._add_recipe(operation['params']['url'])
+                elif operation['op'] == 'toggle_ingredient':
+                    self._toggle_ingredient(operation['params']['index'])
+                elif operation['op'] == 'clear':
+                    self._clear()
+            except:
+                # TODO: we should probably print the error here?
+                pass
             self.operation_queue.task_done()
             self.processing_operation = False
 
@@ -117,24 +122,29 @@ class InstaCart():
             # Then, we go in groups of 5, searching for the ingredients, and then adding them. We still do this
             # linearly, but we can avoid the time waiting for pages to load
             ingredients = recipe['ingredients']
-            ingredient_groups = [ingredients[i * 5: (i + 1) * 5] for i in range(len(ingredients) // 5 + 1)]
+
+            # Before we actually add the ingredients, we go through and remove any and all ingredients we
+            # don't need to add by default because the user already has them. This has the benefit of making 
+            # the app feel more responsive as well
+            ingredients_to_add = []
+            for ingredient in ingredients:
+                if ingredient.ingredient in DEFAULT_NO_ADD_INGREDIENTS:
+                    self.ingredient_pairs.append(IngredientPair(ingredient, ingredient, [], False))
+                else:
+                    ingredients_to_add.append(ingredient)
+
+            ingredient_groups = [ingredients_to_add[i * 5: (i + 1) * 5] for i in range(len(ingredients_to_add) // 5 + 1)]
             for ingredient_group in ingredient_groups:
                 for index, ingredient in enumerate(ingredient_group):
-                    print("| Searching for", ingredient, flush=True)
                     self.driver.switch_to.window(self.driver.window_handles[index])
                     self._search_ingredient(ingredient)
                 
                 for index, ingredient in enumerate(ingredient_group):
-                    print("| Adding", ingredient, flush=True)
                     self.driver.switch_to.window(self.driver.window_handles[index])
                     if not self._add_ingredient(ingredient):
-                        print("UNABLE TO ADD INGREDIENT", flush=True)
+
                         # Reset the cart
-                        self.ingredient_pairs = []
-                        self.url = ''
-                        self.title = ''
-                        self.servings = 0
-                        self.total_num_ingredients = 0
+                        self._empty_cart()
 
                         return None
                     
@@ -142,11 +152,7 @@ class InstaCart():
             print(e, flush=True)
             
             # Reset the cart
-            self.ingredient_pairs = []
-            self.url = ''
-            self.title = ''
-            self.servings = 0
-            self.total_num_ingredients = 0
+            self._empty_cart()
 
             pass
 
@@ -171,10 +177,7 @@ class InstaCart():
         ingredient_links = []
         while timeout < 4 and len(ingredient_links) == 0:
             time.sleep(timeout)
-            start = time.time()
             ingredient_links = self._get_current_ingredient_links()
-            end = time.time()
-            print("| Getting links", end - start, flush=True)
             timeout = timeout * 2
         
         for ingredient_link in ingredient_links:
@@ -227,7 +230,9 @@ class InstaCart():
         # To find the correct index to click, we have to actually figure out how many before the index
         # have already been toggled off, in which case they will not be in the cart
         num_toggled_off_before = len([pair for pair in self.ingredient_pairs[:index] if not pair.toggle])
-        remove_buttons[index - num_toggled_off_before].click()
+        remove_button = remove_buttons[index - num_toggled_off_before]
+        # Actually remove it with javascript, in case it's covered by something
+        self.driver.execute_script("$(arguments[0]).click();", remove_button)
 
         ingredient_pair = self.ingredient_pairs[index]
         ingredient_pair.toggle = False
@@ -245,8 +250,10 @@ class InstaCart():
             timeout *= 2
 
         for button in remove_buttons:
-            button.click()
+            self.driver.execute_script("$(arguments[0]).click();", button)
             time.sleep(.25)
+
+        self._empty_cart()
 
         print(f"Cleared {len(remove_buttons)} items from the cart", flush=True)
 
@@ -343,34 +350,12 @@ class InstaCart():
         
         return ingredient_links
 
-        # OLD:
-
-
-        search_results = self.driver.find_elements_by_xpath('//ul/li')
-
-        ingredient_links: List[IngredientLink] = []
-        for search_result in search_results:
-            try:
-                # Easy to find if it's sponsored
-                is_sponsored = len(search_result.find_elements_by_xpath(".//span[contains(text(), 'Sponsored')]")) > 0
-                store_choice = len(search_result.find_elements_by_xpath(".//span[contains(text(), 'Store choice')]")) > 0
-
-                # Also, easy to find the link    
-                link = search_result.find_element_by_xpath('.//div/div/div/div/div/a').get_attribute('href')
-
-                # We have to handle the differing paths if there is a top element
-                text_xpath = './/div/div/div/div/div/a/div[2]/div[2]' if is_sponsored or store_choice else './/div/div/div/div/div/a/div[1]/div[2]'
-                # The title changes places depending on promotions, but we always want to get the second to last div
-                ingredient_xpath = text_xpath + '/div[position() = (last() - 1)]'
-                search_ingredient = search_result.find_element_by_xpath(ingredient_xpath).text
-
-                ingredient_links.append(
-                    IngredientLink(search_ingredient, link, is_sponsored, store_choice)
-                )
-            except:
-                pass
-        
-        return ingredient_links
+    def _empty_cart(self):
+        self.ingredient_pairs = []
+        self.url = ''
+        self.title = ''
+        self.servings = 0
+        self.total_num_ingredients = 0
 
     def to_JSON(self):
         return json.dumps({

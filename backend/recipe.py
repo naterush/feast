@@ -19,19 +19,9 @@ from bs4 import BeautifulSoup
 
 from ingredients import Ingredient
 
-unit_WORDS = [
-    'teaspoon',
-    'tablespoon',
-    'cup',
-
-    'pound',
-
-    'large',
-    'loaf',
-    'can'
-]
 
 INSTRUCTIONS = [
+    'warm',
     'softened',
     'diced',
     'sliced',
@@ -70,6 +60,9 @@ INSTRUCTIONS = [
     ' - stemmed, seeded, and finely chopped',
     ', cut into florets',
     'peeled and diced',
+    'cut into small pieces',
+    '(185 degrees F (85 degrees C))',
+    '(110 degrees F (43 degrees C))',
 ]
 INSTRUCTIONS.sort(key=lambda x: len(x), reverse=True)
 
@@ -184,6 +177,14 @@ def get_raw_ingredients_from_all_recipe(url: str) -> Dict[str, str]:
         ingredients.extend(get_parsed_ingredient_from_ingredient_text(text))
 
     return ingredients
+
+def combine_same_ingredients(ingredients: List[Ingredient]) -> List[Ingredient]:
+    """
+    If ingredients have the same name, and unit, we can add them. This is nice
+    to do, as it leads to less duplication.
+    """
+    return ingredients
+
 
 def get_recipe_from_all_recipe_link(url: str) -> Dict[str, str]:
     r = requests.get(url)

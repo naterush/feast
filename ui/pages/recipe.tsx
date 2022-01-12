@@ -33,29 +33,15 @@ export interface IngredientLink {
   is_store_choice: boolean;
 }
 
-const toMinAndSeconds = (numMins: number): string => {
-  const seconds = numMins - Math.round(numMins);
-  const minutes = numMins - seconds;
-  let finalString = ''
-
-  if (minutes > 0) {
-    finalString += minutes + ' minutes'
-  }
-  if (seconds > 0) {
-    if (finalString.length > 0) {
-      finalString += ' and '
-    }
-    finalString += (60 * seconds) + ' seconds'
-  }
-  return finalString;
-}
-
 const Home: NextPage = () => {
   
   const [recipe, setRecipe] = useState<Recipe | undefined>(undefined);
   const [toggles, setToggles] = useState<boolean[]>([]);
 
   const loadData = async () => {
+
+    //const text1 = `{"title": "Butterhorn Dinner Rolls", "url": "https://www.allrecipes.com/recipe/8296140/butterhorn-dinner-rolls/", "servings": 12, "ingredients": [{"recipe_ingredient": {"count": 1.5, "unit": "teaspoons", "ingredient": "kosher salt"}, "cart_ingredient": {"count": 1.5, "unit": "teaspoons", "ingredient": "kosher salt"}, "other_ingredient_links": [], "toggle": false}], "total_num_ingredients": 8, "outstanding_operations": true}`
+
     const response = await fetch('/getcurrentrecipe', {
         method: 'GET',
         headers: {
@@ -86,8 +72,10 @@ const Home: NextPage = () => {
     setToggles((prevToggles) => {
       const newToggles = [...prevToggles];
       if (newToggles.length < (recipe?.ingredients.length || 0)) {
+        const originalLength = newToggles.length;
         for (let i = 0; i < ((recipe?.ingredients.length || 0) - newToggles.length); i++) {
-          newToggles.push(true)
+          const newToggleValue = recipe?.ingredients[i + originalLength].toggle;
+          newToggles.push(newToggleValue !== undefined ? newToggleValue : true);
         }
       }
       return newToggles;
@@ -95,7 +83,7 @@ const Home: NextPage = () => {
   }, [recipe])
 
   const numIngredientsNotYetInCart = (recipe?.total_num_ingredients || 0) - (recipe?.ingredients.length || 0);
-  console.log(recipe)
+
   return (
     <>
       <Head>
@@ -137,18 +125,39 @@ const Home: NextPage = () => {
             })}
             {numIngredientsNotYetInCart > 0 && 
               <div>
-                Loading {numIngredientsNotYetInCart} more ingredients. Probably about {toMinAndSeconds(numIngredientsNotYetInCart * .15)} minutes left.
+                Loading {numIngredientsNotYetInCart} more ingredients. About {Math.round(numIngredientsNotYetInCart * .15)} minutes left.
               </div>
             }
           </div>
           <div className='w-100 flex flex-row justify-content-space-between mt-30px'>
-            <button className='blue-button'>
-              <h3 className='mr-10px ml-10px'>
-                <Link href='/'>
-                  Back
-                </Link>
-              </h3>
-            </button>
+            <div>
+              <button className='blue-button'>
+                <h3 className='mr-10px ml-10px'>
+                  <Link href='/'>
+                    Back
+                  </Link>
+                </h3>
+              </button>
+              <button 
+                className='blue-button' 
+                onClick={async () => {
+                  const response = await fetch('/clear', {
+                    method: 'POST',
+                    headers: {
+                      'Accept': 'application/json',
+                      'Content-Type': 'application/json'
+                    },
+                  });
+                  if (response.status != 200) {
+                    return;
+                  }
+                }}
+              >
+                <h3 className='mr-10px ml-10px'>
+                  Clear
+                </h3>
+              </button>
+            </div>
             <IconButton text={!recipe?.outstanding_operations ? 'Checkout' : 'Loading...'} color='blue' onClick={() => {
               if (recipe?.outstanding_operations ) {
                 return;

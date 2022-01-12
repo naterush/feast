@@ -77,7 +77,7 @@ const Home: NextPage = () => {
                 <OpenSource/>
               </div>
               <h1>
-                YOUR COOL INTERNET RECIPES GO HERE.
+                YOUR FAVORITE INTERNET RECIPES GO HERE.
               </h1>
               <h3 className='mt-50px'>
                 The struggle to motivate yourself to get your butt to the store for a new recipe is over: Feast delivers ingredients straight to your door.

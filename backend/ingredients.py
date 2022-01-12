@@ -53,5 +53,14 @@ class IngredientPair:
             'cart_ingredient': self.cart_ingredient.to_serializable(),
             'other_ingredient_links': [
                 link.to_serializable() for link in self.other_ingredient_links
-            ]
+            ],
+            'toggle': self.toggle
         }
+
+DEFAULT_NO_ADD_INGREDIENTS = [
+    'water',
+    'salt',
+    'kosher salt',
+    'pepper',
+    'salt and pepper'
+]
